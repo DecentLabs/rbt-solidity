@@ -1,4 +1,5 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.18;
+
 
 library RedBlackTree {
 
@@ -15,7 +16,7 @@ library RedBlackTree {
         mapping(uint64 => Item) items;
     }
 
-    function getItem(Tree storage tree, uint64 id) public constant returns (uint64 parent, uint64 left, uint64 right, uint value, bool red) {
+    function getItem(Tree storage tree, uint64 id) public view returns (uint64 parent, uint64 left, uint64 right, uint value, bool red) {
         require(id != 0);
         parent = tree.items[id].parent;
         left = tree.items[id].left;
@@ -24,14 +25,14 @@ library RedBlackTree {
         red = tree.items[id].red;
     }
 
-    function find(Tree storage tree, uint value) public constant returns (uint64 parentId) {
+    function find(Tree storage tree, uint value) public view returns (uint64 parentId) {
         uint64 id = tree.root;
         parentId = id;
         while (id != 0) {
             if (value == tree.items[id].value) {
                 return;
             }
-            
+
             parentId = id;
             if (value < tree.items[id].value) {
                 id = tree.items[id].left;
@@ -47,7 +48,7 @@ library RedBlackTree {
     }
 
     function placeAfter(Tree storage tree, uint64 parent, uint64 id, uint value) internal {
-        Item memory item;        
+        Item memory item;
         item.value = value;
         item.parent = parent;
         item.red = true;
@@ -59,7 +60,7 @@ library RedBlackTree {
             }
         } else {
             tree.root = id;
-        }        
+        }
         tree.items[id] = item;
         insert1(tree, id);
     }
@@ -83,7 +84,7 @@ library RedBlackTree {
                         n = tree.items[n].left;
                     } else if ((n == tree.items[p].left) && (p == tree.items[g].right)) {
                         rotateRight(tree, p);
-                        n = tree.items[n].right; 
+                        n = tree.items[n].right;
                     }
 
                     insert2(tree, n);
@@ -130,13 +131,13 @@ library RedBlackTree {
         } else {
             successor = nLeft;
         }
-        
+
         uint64 p = tree.items[n].parent;
         tree.items[successor].parent = p;
 
         if (p != 0) {
             if (n == tree.items[p].left) {
-                tree.items[p].left = successor; 
+                tree.items[p].left = successor;
             } else {
                 tree.items[p].right = successor;
             }
@@ -177,33 +178,33 @@ library RedBlackTree {
         uint64 p = tree.items[n].parent;
         uint64 sLeft = tree.items[s].left;
         uint64 sRight = tree.items[s].right;
-        if (!tree.items[p].red && 
-            !tree.items[s].red && 
-            !tree.items[sLeft].red && 
-            !tree.items[sRight].red) 
+        if (!tree.items[p].red &&
+            !tree.items[s].red &&
+            !tree.items[sLeft].red &&
+            !tree.items[sRight].red)
         {
             tree.items[s].red = true;
             delete1(tree, p);
         } else {
-             if (tree.items[p].red && 
-                !tree.items[s].red && 
-                !tree.items[sLeft].red && 
-                !tree.items[sRight].red) 
+             if (tree.items[p].red &&
+                !tree.items[s].red &&
+                !tree.items[sLeft].red &&
+                !tree.items[sRight].red)
             {
                 tree.items[s].red = true;
                 tree.items[p].red = false;
             } else {
                 if (!tree.items[s].red) {
-                    if (n == tree.items[p].left && 
+                    if (n == tree.items[p].left &&
                         !tree.items[sRight].red &&
-                        tree.items[sLeft].red) 
+                        tree.items[sLeft].red)
                     {
                         tree.items[s].red = true;
                         tree.items[sLeft].red = false;
                         rotateRight(tree, s);
-                    } else if (n == tree.items[p].right && 
+                    } else if (n == tree.items[p].right &&
                         !tree.items[sLeft].red &&
-                        tree.items[sRight].red) 
+                        tree.items[sRight].red)
                     {
                         tree.items[s].red = true;
                         tree.items[sRight].red = false;
@@ -225,21 +226,21 @@ library RedBlackTree {
         }
     }
 
-    function grandparent(Tree storage tree, uint64 n) private returns (uint64) {
+    function grandparent(Tree storage tree, uint64 n) private view returns (uint64) {
         return tree.items[tree.items[n].parent].parent;
     }
 
-    function uncle(Tree storage tree, uint64 n) private returns (uint64) {
+    function uncle(Tree storage tree, uint64 n) private view returns (uint64) {
         uint64 g = grandparent(tree, n);
         if (g == 0)
             return 0;
-        
+
         if (tree.items[n].parent == tree.items[g].left)
             return tree.items[g].right;
         return tree.items[g].left;
     }
 
-    function sibling(Tree storage tree, uint64 n) private returns (uint64) {
+    function sibling(Tree storage tree, uint64 n) private view returns (uint64) {
         uint64 p = tree.items[n].parent;
         if (n == tree.items[p].left) {
             return tree.items[p].right;
